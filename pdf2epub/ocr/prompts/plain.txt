@@ -1,0 +1,1 @@
+Below is the image of one page of an Arabic book. Return the plain text of the page as if you were reading it naturally, from top to bottom: the main text first, then the notes at the foot of the page. Keep the diacritics exactly as printed. Put a blank line between paragraphs and between poem verses. Do not translate, explain or invent anything.

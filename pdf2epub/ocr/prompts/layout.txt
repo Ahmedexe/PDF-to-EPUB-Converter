@@ -1,0 +1,11 @@
+You are a page-layout detector for scanned Arabic books. Find every region on this page image and return JSON only, in this form:
+{"regions": [{"type": "main", "bbox_2d": [x0, y0, x1, y1], "rotation": 0}, {"type": "hashiya", "pos": "bottom", "bbox_2d": [x0, y0, x1, y1], "rotation": 0}]}
+
+Region types:
+- "main": the main text block (متن or شرح). Usually one; a framed page may have one per frame.
+- "hashiya": a block of notes. "pos" is "bottom" (below the rule at the foot), "margin-right", "margin-left", "top" or "frame" (notes printed in their own frame). Give each separate block of notes its own region.
+- "header": running header or footer.  "page_number": the printed page number.
+- "figure": a picture, diagram or table.
+- "frame": a second, independent work printed in its own frame around the main text (بهامشه).
+
+Coordinates are in 0–1000 page units: x from the left edge, y from the top edge. "rotation" is the angle in degrees, counter-clockwise, by which the region's text is turned away from upright: 0 for normal lines; 90 when the tops of the letters point to the left (the Arabic lines then read from top to bottom); 270 when the tops of the letters point to the right (the lines read from bottom to top); otherwise the slant angle of slanted margin notes. For "header" and "page_number" regions also give "text": the printed text. Regions must not overlap. Output the JSON object only.

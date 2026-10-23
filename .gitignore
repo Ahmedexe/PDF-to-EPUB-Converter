@@ -1,0 +1,16 @@
+# Python
+.venv/
+__pycache__/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Generated per book (page images, model output, EPUBs) and training data: large, rebuilt by the tools
+work/
+training/
+demo/
+
+# Book scans are copyrighted and large; keep only the small reference texts of the test sets
+sample/**/*.pdf
+sample/**/*.zip
+sample/hiwan/

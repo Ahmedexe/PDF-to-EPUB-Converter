@@ -1,0 +1,58 @@
+:root { --bg: #fafaf7; --fg: #1d1d1b; --muted: #6b6b66; --line: #d9d6cc; --accent: #2457a6;
+        --warn: #fff1b8; --err: #ffd6d0; --ok: #d9f2dd; --pane: #ffffff; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #1b1b1a; --fg: #ecebe6; --muted: #a3a29b; --line: #3b3a36; --accent: #8fb3ff;
+          --warn: #5a4b12; --err: #5c2620; --ok: #1f4a2a; --pane: #242422; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: "Amiri", "Noto Naskh Arabic", serif; background: var(--bg); color: var(--fg); }
+button, select { font: inherit; padding: 2px 10px; border: 1px solid var(--line); background: var(--pane); color: var(--fg); border-radius: 4px; cursor: pointer; }
+button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.top { display: flex; gap: 12px; align-items: center; padding: 6px 12px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--bg); z-index: 5; }
+.spacer { flex: 1; }
+.layout { display: grid; grid-template-columns: 150px 1fr 1fr; height: calc(100vh - 46px); }
+.pages { overflow-y: auto; border-left: 1px solid var(--line); }
+.pages a { display: block; padding: 3px 8px; color: var(--fg); text-decoration: none; font-size: 14px; border-bottom: 1px solid var(--line); }
+.pages a.current { background: var(--accent); color: #fff; }
+.pages a.flagged::after { content: " ●"; color: #c23; }
+.pages a.reviewed::after { content: " ✓"; color: #2a2; }
+.image-pane { overflow: auto; border-left: 1px solid var(--line); padding: 8px; }
+#image-wrap { position: relative; display: inline-block; }
+#page-image { max-width: 100%; display: block; }
+#boxes div { position: absolute; border: 2px solid rgba(36, 87, 166, .6); pointer-events: none; }
+#boxes div.hashiya { border-color: rgba(200, 120, 0, .7); }
+#boxes span { position: absolute; top: -18px; right: 0; font-size: 11px; background: var(--pane); padding: 0 3px; }
+.text-pane { overflow-y: auto; padding: 8px 14px; }
+.text { position: relative; font-size: 19px; line-height: 1.9; }
+#lines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+#lines line { stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.blk { margin: 4px 0; border-right: 3px solid transparent; padding-right: 6px; }
+.blk.flagged { border-right-color: #d33; background: var(--err); }
+.blk.heading h1, .blk.heading h2, .blk.heading h3, .blk.heading h4 { margin: 4px 0; text-align: center; }
+.blk p { margin: 0; }
+.blk.quran { text-align: center; }
+.verse { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; text-align: center; }
+.quran { font-family: "Amiri Quran", "Amiri", serif; }
+.q-verified { background: var(--ok); } .q-corrected { background: var(--ok); text-decoration: underline dotted; }
+.q-flagged, .q-unchecked { background: var(--err); } .q-accepted { background: var(--warn); }
+.unclear { background: var(--warn); outline: 1px dashed #b90; }
+.matn { font-weight: bold; }
+sup.ref { color: var(--accent); cursor: pointer; padding: 0 2px; }
+sup.ref.generated { color: #b60; } sup.ref.unpaired { color: #d33; }
+.hl { outline: 2px solid var(--accent); border-radius: 3px; }
+#notes { margin-top: 18px; border-top: 2px solid var(--line); font-size: 16px; }
+.region-name { color: var(--muted); font-size: 12px; margin-top: 8px; }
+.note { margin: 6px 0; padding: 4px 6px; border-right: 3px solid var(--line); }
+.note.link-flagged { border-right-color: #d33; background: var(--err); }
+.note.link-guessed { border-right-color: #e90; background: var(--warn); }
+.note.link-linked { border-right-color: #3a3; }
+.note-head { display: flex; gap: 8px; align-items: center; font-size: 14px; }
+.note-head .meta { color: var(--muted); font-size: 12px; flex: 1; }
+.flags { font-size: 14px; }
+.flags div { padding: 2px 6px; margin: 2px 0; border-radius: 3px; }
+.flags .error { background: var(--err); } .flags .warning { background: var(--warn); } .flags .info { color: var(--muted); }
+.actions { margin: 8px 0; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.status { color: var(--muted); font-size: 14px; }
+.hint { background: var(--warn); padding: 6px; border-radius: 4px; }
+#tags { width: 100%; height: 60vh; font-family: monospace; font-size: 14px; direction: rtl; }
+@media (max-width: 900px) { .layout { grid-template-columns: 1fr; height: auto; } .pages { display: none; } }

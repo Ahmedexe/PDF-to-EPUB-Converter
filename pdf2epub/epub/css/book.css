@@ -1,0 +1,46 @@
+/* pdf2epub book style. @font-face rules for the embedded fonts are added by the builder.
+    Text direction comes only from dir="rtl" attributes in the XHTML
+   (EPUB validators reject the CSS properties for it). */
+
+body { font-family: "Amiri", "Noto Naskh Arabic", serif; line-height: 1.7; margin: 0 0.6em; }
+body.noto { font-family: "Noto Naskh Arabic", "Amiri", serif; }
+p { text-align: justify; text-indent: 1.2em; margin: 0 0 0.35em 0; }
+h1, h2, h3, h4 { text-align: center; line-height: 1.4; margin: 1em 0 0.6em 0; page-break-after: avoid; }
+h1 { font-size: 1.6em; } h2 { font-size: 1.35em; } h3 { font-size: 1.15em; } h4 { font-size: 1.05em; }
+
+.quran { font-family: "Amiri Quran", "Amiri", serif; }
+p.quran-block { text-align: center; text-indent: 0; margin: 0.5em 0; }
+.qref { font-size: 0.75em; }
+.quote { }
+b.matn { font-weight: bold; }
+.unclear { }
+.draft-flag { background-color: #fff3b0; }
+p.sep { text-align: center; text-indent: 0; margin: 0.8em 0; }
+
+table.poem { margin: 0.6em auto; border-collapse: collapse; width: 100%; }
+table.poem td { text-align: center; vertical-align: top; padding: 0.1em 0.4em; width: 50%; }
+div.poem { margin: 0.6em 0; }
+div.poem p { text-indent: 0; text-align: center; margin: 0; }
+div.stacked div.bayt { margin-bottom: 0.6em; }
+div.stacked p.sadr { text-align: right; }
+div.stacked p.ajuz { text-align: left; margin-right: 2em; }
+div.single p.sadr { margin-bottom: 0.3em; }
+
+a.noteref { text-decoration: none; font-size: 0.7em; vertical-align: super; line-height: 0; }
+span.marker { font-size: 0.7em; vertical-align: super; line-height: 0; }
+a.backlink { text-decoration: none; font-weight: bold; }
+b.lemma { font-weight: bold; }
+aside.footnote, div.note, div.endnote { font-size: 0.85em; line-height: 1.5; }
+aside.footnote p, div.note p, div.endnote p { text-indent: 0; margin: 0 0 0.25em 0; }
+section.footnotes, section.endnotes { margin-top: 1.5em; border-top: 1px solid #888; padding-top: 0.4em; }
+h2.notes-title { font-size: 1em; text-align: right; margin: 0.3em 0; }
+div.notes-inline { font-size: 0.85em; margin: 0.2em 1em 0.8em 1em; border-right: 2px solid #aaa; padding-right: 0.5em; }
+.editor-note { }
+
+figure.figure { margin: 0.8em 0; text-align: center; }
+figure.figure img { max-width: 100%; }
+figcaption { font-size: 0.85em; text-align: center; }
+div.cover { text-align: center; margin: 0; padding: 0; }
+div.cover img { max-width: 100%; max-height: 100%; }
+div.credits p { text-indent: 0; font-size: 0.9em; }
+div.credits pre { font-size: 0.6em; white-space: pre-wrap; }

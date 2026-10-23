@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>مراجعة الصفحات</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="top">
+  <strong id="book-title">…</strong>
+  <label>عرض: <select id="filter">
+    <option value="todo">تحتاج مراجعة</option><option value="all">كل الصفحات</option>
+  </select></label>
+  <span id="counts"></span>
+  <span class="spacer"></span>
+  <button id="prev" title="السابقة (←)">‹</button>
+  <span id="page-label">—</span>
+  <button id="next" title="التالية (→)">›</button>
+</header>
+<div class="layout">
+  <nav id="pages" class="pages"></nav>
+  <section class="image-pane">
+    <div id="image-wrap"><img id="page-image" alt="صورة الصفحة"><div id="boxes"></div></div>
+  </section>
+  <section class="text-pane">
+    <div id="flags" class="flags"></div>
+    <div class="actions">
+      <button id="approve" class="primary">اعتماد الصفحة</button>
+      <button id="edit">تحرير الوسوم</button>
+      <button id="revert">إلغاء المراجعة</button>
+      <span id="status" class="status"></span>
+    </div>
+    <div id="hint" class="hint" hidden>اختر الكلمات التي تشرحها الحاشية في النص ثم اضغط «تثبيت الربط». <button id="link-ok">تثبيت الربط</button> <button id="link-cancel">إلغاء</button></div>
+    <div id="text" class="text"><svg id="lines"></svg><div id="main"></div><div id="notes"></div></div>
+    <div id="editor" hidden>
+      <textarea id="tags" dir="rtl" spellcheck="false"></textarea>
+      <div><button id="save" class="primary">حفظ وإعادة الفحص</button> <button id="cancel">إلغاء</button></div>
+    </div>
+  </section>
+</div>
+<script src="/static/app.js"></script>
+</body>
+</html>
