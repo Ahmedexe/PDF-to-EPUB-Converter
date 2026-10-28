@@ -17,6 +17,8 @@ class Completion:
     model: str = ""
     elapsed_s: float = 0.0
     usage: dict[str, int] = field(default_factory=dict)
+    # with ocr.logprobs: each output token and its top alternatives, {"t", "lp", "alt": [[t, lp], ...]}
+    tokens: list[dict] | None = None
 
 
 class Backend(Protocol):

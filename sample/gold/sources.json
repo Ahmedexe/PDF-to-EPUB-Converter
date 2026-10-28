@@ -1,0 +1,227 @@
+[
+ {
+  "gold_page": 1,
+  "pdf": "sample/test/part.pdf",
+  "page": 5
+ },
+ {
+  "gold_page": 2,
+  "pdf": "sample/test/part.pdf",
+  "page": 15
+ },
+ {
+  "gold_page": 3,
+  "pdf": "sample/test/part.pdf",
+  "page": 25
+ },
+ {
+  "gold_page": 4,
+  "pdf": "sample/test/part.pdf",
+  "page": 35
+ },
+ {
+  "gold_page": 5,
+  "pdf": "sample/test/part.pdf",
+  "page": 45
+ },
+ {
+  "gold_page": 6,
+  "pdf": "sample/test/part.pdf",
+  "page": 55
+ },
+ {
+  "gold_page": 7,
+  "pdf": "sample/test/part.pdf",
+  "page": 65
+ },
+ {
+  "gold_page": 8,
+  "pdf": "sample/test/part.pdf",
+  "page": 75
+ },
+ {
+  "gold_page": 9,
+  "pdf": "sample/test/part.pdf",
+  "page": 85
+ },
+ {
+  "gold_page": 10,
+  "pdf": "sample/test/part.pdf",
+  "page": 95
+ },
+ {
+  "gold_page": 11,
+  "pdf": "sample/test2/part.pdf",
+  "page": 4
+ },
+ {
+  "gold_page": 12,
+  "pdf": "sample/test2/part.pdf",
+  "page": 14
+ },
+ {
+  "gold_page": 13,
+  "pdf": "sample/test2/part.pdf",
+  "page": 24
+ },
+ {
+  "gold_page": 14,
+  "pdf": "sample/test2/part.pdf",
+  "page": 34
+ },
+ {
+  "gold_page": 15,
+  "pdf": "sample/test2/part.pdf",
+  "page": 44
+ },
+ {
+  "gold_page": 16,
+  "pdf": "sample/test2/part.pdf",
+  "page": 54
+ },
+ {
+  "gold_page": 17,
+  "pdf": "sample/test2/part.pdf",
+  "page": 64
+ },
+ {
+  "gold_page": 18,
+  "pdf": "sample/test2/part.pdf",
+  "page": 74
+ },
+ {
+  "gold_page": 19,
+  "pdf": "sample/test2/part.pdf",
+  "page": 84
+ },
+ {
+  "gold_page": 20,
+  "pdf": "sample/test2/part.pdf",
+  "page": 94
+ },
+ {
+  "gold_page": 21,
+  "pdf": "sample/test3/umayyad-21-60.pdf",
+  "page": 2
+ },
+ {
+  "gold_page": 22,
+  "pdf": "sample/test3/umayyad-21-60.pdf",
+  "page": 6
+ },
+ {
+  "gold_page": 23,
+  "pdf": "sample/test3/umayyad-21-60.pdf",
+  "page": 10
+ },
+ {
+  "gold_page": 24,
+  "pdf": "sample/test3/umayyad-21-60.pdf",
+  "page": 14
+ },
+ {
+  "gold_page": 25,
+  "pdf": "sample/test3/umayyad-21-60.pdf",
+  "page": 18
+ },
+ {
+  "gold_page": 26,
+  "pdf": "sample/test3/umayyad-21-60.pdf",
+  "page": 22
+ },
+ {
+  "gold_page": 27,
+  "pdf": "sample/test3/umayyad-21-60.pdf",
+  "page": 26
+ },
+ {
+  "gold_page": 28,
+  "pdf": "sample/test3/umayyad-21-60.pdf",
+  "page": 30
+ },
+ {
+  "gold_page": 29,
+  "pdf": "sample/test3/umayyad-21-60.pdf",
+  "page": 34
+ },
+ {
+  "gold_page": 30,
+  "pdf": "sample/test3/umayyad-21-60.pdf",
+  "page": 38
+ },
+ {
+  "gold_page": 31,
+  "pdf": "sample/bayaan.pdf",
+  "page": 30
+ },
+ {
+  "gold_page": 32,
+  "pdf": "sample/bayaan.pdf",
+  "page": 67
+ },
+ {
+  "gold_page": 33,
+  "pdf": "sample/bayaan.pdf",
+  "page": 104
+ },
+ {
+  "gold_page": 34,
+  "pdf": "sample/bayaan.pdf",
+  "page": 141
+ },
+ {
+  "gold_page": 35,
+  "pdf": "sample/bayaan.pdf",
+  "page": 178
+ },
+ {
+  "gold_page": 36,
+  "pdf": "sample/bayaan.pdf",
+  "page": 215
+ },
+ {
+  "gold_page": 37,
+  "pdf": "sample/bayaan.pdf",
+  "page": 252
+ },
+ {
+  "gold_page": 38,
+  "pdf": "sample/bayaan.pdf",
+  "page": 289
+ },
+ {
+  "gold_page": 39,
+  "pdf": "sample/bayaan.pdf",
+  "page": 326
+ },
+ {
+  "gold_page": 40,
+  "pdf": "sample/bayaan.pdf",
+  "page": 363
+ },
+ {
+  "gold_page": 41,
+  "pdf": "sample/arb3on.pdf",
+  "page": 7
+ },
+ {
+  "gold_page": 42,
+  "pdf": "sample/arb3on.pdf",
+  "page": 9
+ },
+ {
+  "gold_page": 43,
+  "pdf": "sample/arb3on.pdf",
+  "page": 14
+ },
+ {
+  "gold_page": 44,
+  "pdf": "sample/arb3on.pdf",
+  "page": 21
+ },
+ {
+  "gold_page": 45,
+  "pdf": "sample/arb3on.pdf",
+  "page": 40
+ }
+]

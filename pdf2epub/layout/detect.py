@@ -174,18 +174,42 @@ def _rule_y(gray: np.ndarray, main: tuple[int, int, int, int], *, first: bool = 
     """y of a horizontal rule in the lower part of the page (the foot-note separator): the lowest
     one, or with ``first`` the topmost (where the main text ends when notes come in two sets)."""
     _t, mask = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+    raw = mask
     h, w = mask.shape
     # Thicken by a pixel or two first: a thin rule on a slightly tilted scan steps between rows.
     mask = cv2.dilate(mask, cv2.getStructuringElement(cv2.MORPH_RECT, (1, 3)))
     lines = cv2.morphologyEx(mask, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_RECT, (max(10, w // 8), 1)))
-    n, _l, stats, _ = cv2.connectedComponentsWithStats(lines)
+    n, labels, stats, _ = cv2.connectedComponentsWithStats(lines)
     best = None
+    pad = max(6, h // 200)
     for i in range(1, n):
         x, y, bw, bh, _a = stats[i]
         # short (classic) or full-width rules; not a frame line at the very bottom edge
-        if h * 0.4 < y < h * 0.96 and bh <= max(4, h // 300) and bw < w * 0.95:
-            best = y if best is None else (min(best, y) if first else max(best, y))
+        if not (h * 0.4 < y < h * 0.96 and bh <= max(4, h // 300) and bw < w * 0.95):
+            continue
+        if _ink_beside(raw, labels, i, x, bw, pad) > 0.25:
+            continue  # a stretched letter (kashida) in a justified line, not a rule
+        best = y if best is None else (min(best, y) if first else max(best, y))
     return best if best is not None else _dotted_rule_y(mask)
+
+
+def _ink_beside(raw: np.ndarray, labels: np.ndarray, label: int, x: int, bw: int, pad: int) -> float:
+    """Share of a horizontal line's columns with ink just above or just below it, measured from
+    the line's own rows in each column (so a tilted rule does not count against itself). A rule
+    has white space on both sides; a kashida has letters beside it in many columns."""
+    comp = labels[:, x:x + bw] == label
+    has = comp.any(axis=0)
+    if not has.any():
+        return 1.0
+    top = np.where(has, comp.argmax(axis=0), 0)
+    bot = np.where(has, comp.shape[0] - 1 - comp[::-1].argmax(axis=0), 0)
+    hits = 0
+    for c in np.where(has)[0]:
+        col = raw[:, x + c]
+        t, b = top[c], bot[c]
+        if (col[max(0, t - pad):max(0, t - 2)] > 0).any() or (col[b + 3:b + pad] > 0).any():
+            hits += 1
+    return hits / has.sum()
 
 
 def _dotted_rule_y(mask: np.ndarray) -> int | None:

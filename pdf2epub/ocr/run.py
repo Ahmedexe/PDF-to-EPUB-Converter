@@ -239,6 +239,14 @@ async def ocr_page(entry: PageEntry, wd: WorkDir, cfg: BookConfig, client: OcrCl
             completion = await _read_with_retry(client, wd.abs(entry.image), system, user, stem, cfg, info,
                                                 attempts, refresh=force)
             tags = plain_to_tags(completion.text) if cfg.ocr.prompt_preset == "plain" else completion.text
+            tokens_file = wd.page_tags(entry.index).with_name(f"{stem}.tokens.json")
+            if completion.tokens and "".join(t["t"] for t in completion.tokens) == tags:
+                # compact: a token the model was 99% sure of keeps no alternatives (they never win)
+                slim = [{"t": t["t"], "lp": round(t["lp"], 3), "alt": [] if t["lp"] > -0.01 else
+                         [[a, round(lp, 3)] for a, lp in t["alt"]]} for t in completion.tokens]
+                wd.write_text(tokens_file, json.dumps(slim, ensure_ascii=False, separators=(",", ":")))
+            else:
+                tokens_file.unlink(missing_ok=True)
     except (OcrError, FileNotFoundError, OSError) as exc:
         log.warning("page %d: OCR failed: %s", entry.index, exc)
         info.finish_reasons.append("error")

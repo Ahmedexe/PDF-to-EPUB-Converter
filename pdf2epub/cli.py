@@ -71,6 +71,9 @@ def book_options(f):
         click.option("--dpi", type=int, help="Render resolution for pages that are not plain scans."),
         click.option("--tesseract/--no-tesseract", default=None, help="Tesseract word-count cross-check."),
         click.option("--epubcheck/--no-epubcheck", default=None, help="Validate the EPUB with EPUBCheck."),
+        click.option("--review", type=click.Choice(["auto", "required"]),
+                     help="auto: unattended (flagged pages are re-read once more, the final EPUB is built with a "
+                          "quality report); required: the EPUB waits for the review screen."),
     ]
     for opt in reversed(opts):
         f = opt(f)
@@ -86,7 +89,7 @@ def overrides_from(kw: dict[str, Any]) -> dict[str, Any]:
         "editor_markers": "text.editor_markers", "regions": "layout.regions", "backend": "ocr.backend",
         "endpoint": "ocr.endpoint", "model": "ocr.model", "fixtures": "ocr.fixtures",
         "concurrency": "ocr.concurrency", "dpi": "ingest.dpi", "tesseract": "checks.tesseract",
-        "epubcheck": "build.epubcheck",
+        "epubcheck": "build.epubcheck", "review": "build.review",
     }
     out = {mapping[k]: v for k, v in kw.items() if k in mapping and v is not None}
     if kw.get("fixtures"):
@@ -186,6 +189,8 @@ def build(obj: dict[str, Any], slug: str, draft: bool, **kw: Any) -> None:
         sys.exit(2)
     for path in report.epubs:
         click.echo(f"Wrote {path}")
+    if report.quality:
+        click.echo(f"Quality report: {report.quality}")
     if not report.ok:
         sys.exit(1)
 

@@ -188,6 +188,26 @@ def check_health(page: Page, cfg: BookConfig, *, tags: str | None = None, tess_t
         loop = find_repetition(raw, cfg.checks.repetition_min_repeats + 1)
     if loop:
         flag(FlagCode.REPETITION, f"repeated text: «{loop[:80]}»", "error")
+    rescore_record = wd.page_tags(page.index).with_name(f"{wd.stem(page.index)}.rescore.json") if wd is not None else None
+    if rescore_record is not None and rescore_record.exists():  # language-model rescoring (pdf2epub/rescore.py)
+        import json
+
+        changes = json.loads(rescore_record.read_text(encoding="utf-8")).get("changes") or []
+        if changes:
+            flag(FlagCode.WORDS_CORRECTED, f"{len(changes)} word(s) corrected by the language model: "
+                 + ", ".join(f"{c['from']} → {c['to']}" for c in changes[:8]), "info")
+    lines_record = wd.page_tags(page.index).with_name(f"{wd.stem(page.index)}.lines.json") if wd is not None else None
+    if lines_record is not None and lines_record.exists():  # the completeness check (checks/completeness.py)
+        import json
+
+        record = json.loads(lines_record.read_text(encoding="utf-8"))
+        if record.get("inserted"):
+            flag(FlagCode.LINES_INSERTED, f"{len(record['inserted'])} skipped line(s) read on their own and added: "
+                 + " / ".join(f"«{x['text'][:40]}»" for x in record["inserted"][:3]), "info")
+        for x in record.get("skipped_missing", [])[:3]:
+            flag(FlagCode.TEXT_LOST, f"a printed line seems missing: «{x['text'][:60]}»")
+        for x in record.get("extra", [])[:3]:
+            flag(FlagCode.EXTRA_TEXT, f"text no printed line matches: «{x['words'][:60]}»")
     for block, _owner in iter_blocks(page):
         for container in block_containers(block):
             for _c, _i, node in walk_inline_slots(container):

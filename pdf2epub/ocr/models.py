@@ -32,6 +32,9 @@ class Candidate:
 CANDIDATES: dict[str, Candidate] = {c.key: c for c in [
     Candidate("qwen3-vl-8b", "Qwen/Qwen3-VL-8B-Instruct", 8.8,
               note="the spec's main candidate and the base to fine-tune"),
+    Candidate("qwen3-vl-30b-a3b", "Qwen/Qwen3-VL-30B-A3B-Instruct", 31.1, gpu="H100",
+              note="mixture of experts: 31B parameters, about 3B active per token (8B-like speed); "
+                   "62 GB of bf16 weights, so an 80 GB GPU"),
     Candidate("qwen3.5-9b", "Qwen/Qwen3.5-9B", 9.7,
               extra_body={"chat_template_kwargs": {"enable_thinking": False}},
               note="newer natively multimodal Qwen (2026); thinking switched off"),
@@ -43,8 +46,8 @@ CANDIDATES: dict[str, Candidate] = {c.key: c for c in [
 ]}
 
 
-DEFAULT_KEY = "ft-ft2"  # the model `pdf2epub convert` uses unless told otherwise
-DEFAULT_MODEL = "/models/ft2/merged"
+DEFAULT_KEY = "ft-ft4"  # the model `pdf2epub convert` uses unless told otherwise
+DEFAULT_MODEL = "/models/ft4/merged"
 
 
 def key_for(model: str) -> str | None:

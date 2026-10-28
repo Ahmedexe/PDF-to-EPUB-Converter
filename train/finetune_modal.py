@@ -47,7 +47,11 @@ VISION_TARGETS = r".*visual\.blocks\.\d+\.(attn\.qkv|attn\.proj|mlp\.linear_fc1|
 @app.function(image=image, gpu=GPU, timeout=24 * 60 * 60,
               volumes={"/cache/huggingface": hf_cache, "/data": train_vol, "/models": models_vol})
 def train(bundle: str, run: str, epochs: float = 1.0, lr: float = 1e-4, rank: int = 16, accum: int = 8,
-          max_length: int = 12288, vision: bool = False, eval_every: int = 200, limit: int = 0) -> dict:
+          max_length: int = 12288, vision: bool = False, eval_every: int = 200, limit: int = 0,
+          base: str = BASE) -> dict:
+    """``bundle``: one bundle, or several as "a,b:3000" (a name with ":N" contributes N random
+    training examples); validation comes from the first bundle that has a val.jsonl. ``base``:
+    the Hugging Face model or a merged run (e.g. /models/ft2/merged) to continue from."""
     import math
     import random
     import time
@@ -57,7 +61,6 @@ def train(bundle: str, run: str, epochs: float = 1.0, lr: float = 1e-4, rank: in
     from PIL import Image
     from transformers import AutoModelForImageTextToText, AutoProcessor, get_cosine_schedule_with_warmup
 
-    root = Path("/data") / bundle
     out = Path("/models") / run
     out.mkdir(parents=True, exist_ok=True)
     log_file = (out / "log.jsonl").open("a", encoding="utf-8")
@@ -68,15 +71,32 @@ def train(bundle: str, run: str, epochs: float = 1.0, lr: float = 1e-4, rank: in
         log_file.write(json.dumps(rec, ensure_ascii=False) + "\n")
         log_file.flush()
 
-    def load(name: str) -> list[dict]:
-        return [json.loads(x) for x in (root / name).read_text(encoding="utf-8").splitlines() if x.strip()]
+    def load(root: Path, name: str) -> list[dict]:
+        f = root / name
+        if not f.exists():
+            return []
+        items = [json.loads(x) for x in f.read_text(encoding="utf-8").splitlines() if x.strip()]
+        for item in items:
+            item["_root"] = str(root)
+        return items
 
-    train_items, val_items = load("train.jsonl"), load("val.jsonl")
+    train_items, val_items = [], []
+    pick = random.Random(1)
+    for spec in bundle.split(","):
+        name, _, cap = spec.partition(":")
+        items = load(Path("/data") / name, "train.jsonl")
+        if cap:
+            pick.shuffle(items)
+            items = items[: int(cap)]
+        train_items += items
+        if not val_items:
+            val_items = load(Path("/data") / name, "val.jsonl")
+    pick.shuffle(train_items)
     if limit:
         train_items = train_items[:limit]
 
     processor = AutoProcessor.from_pretrained(BASE)
-    model = AutoModelForImageTextToText.from_pretrained(BASE, dtype=torch.bfloat16, attn_implementation="sdpa",
+    model = AutoModelForImageTextToText.from_pretrained(base, dtype=torch.bfloat16, attn_implementation="sdpa",
                                                         device_map={"": 0})
     model.config.use_cache = False
     model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
@@ -85,11 +105,11 @@ def train(bundle: str, run: str, epochs: float = 1.0, lr: float = 1e-4, rank: in
     model = get_peft_model(model, LoraConfig(r=rank, lora_alpha=2 * rank, lora_dropout=0.05,
                                              target_modules=targets, task_type="CAUSAL_LM"))
     trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    log(event="start", bundle=bundle, train=len(train_items), val=len(val_items), trainable=trainable,
+    log(event="start", bundle=bundle, base=base, train=len(train_items), val=len(val_items), trainable=trainable,
         epochs=epochs, lr=lr, rank=rank, accum=accum, vision=vision)
 
     def encode(item: dict) -> dict | None:
-        img = Image.open(root / item["image"]).convert("RGB")
+        img = Image.open(Path(item["_root"]) / item["image"]).convert("RGB")
         prompt = [{"role": "system", "content": [{"type": "text", "text": item["system"]}]},
                   {"role": "user", "content": [{"type": "image"}, {"type": "text", "text": item["user"]}]}]
         full = prompt + [{"role": "assistant", "content": [{"type": "text", "text": item["target"]}]}]
@@ -179,7 +199,7 @@ def train(bundle: str, run: str, epochs: float = 1.0, lr: float = 1e-4, rank: in
 
 @app.function(image=image, gpu=GPU, timeout=60 * 60,
               volumes={"/cache/huggingface": hf_cache, "/models": models_vol})
-def merge(run: str) -> str:
+def merge(run: str, base: str = BASE) -> str:
     """Merge a saved adapter (``/models/<run>/adapter``) into 16-bit weights at ``/models/<run>/merged``:
     for a run that stopped early, its last saved adapter."""
     import torch
@@ -187,7 +207,7 @@ def merge(run: str) -> str:
     from transformers import AutoModelForImageTextToText, AutoProcessor
 
     out = Path("/models") / run
-    model = AutoModelForImageTextToText.from_pretrained(BASE, dtype=torch.bfloat16, device_map={"": 0})
+    model = AutoModelForImageTextToText.from_pretrained(base, dtype=torch.bfloat16, device_map={"": 0})
     merged = PeftModel.from_pretrained(model, out / "adapter").merge_and_unload()
     merged.save_pretrained(out / "merged", safe_serialization=True)
     AutoProcessor.from_pretrained(BASE).save_pretrained(out / "merged")

@@ -28,6 +28,7 @@ def main() -> None:
     ap.add_argument("--rank", type=int, default=16)
     ap.add_argument("--vision", action="store_true")
     ap.add_argument("--eval-every", type=int, default=150)
+    ap.add_argument("--base", default="Qwen/Qwen3-VL-8B-Instruct", help="model to continue from, e.g. /models/ft2/merged")
     ap.add_argument("--log")
     ap.add_argument("--cancel", metavar="CALL_ID")
     args = ap.parse_args()
@@ -52,7 +53,7 @@ def main() -> None:
 
     train = modal.Function.from_name("pdf2epub-finetune", "train")
     call = train.spawn(args.bundle, args.run, epochs=args.epochs, lr=args.lr, rank=args.rank, accum=8,
-                       vision=args.vision, eval_every=args.eval_every)
+                       vision=args.vision, eval_every=args.eval_every, base=args.base)
     print(f"started {args.run}: call {call.object_id}")
 
 

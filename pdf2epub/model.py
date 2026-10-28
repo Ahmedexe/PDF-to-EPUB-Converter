@@ -311,6 +311,9 @@ class FlagCode:
     QURAN_UNCHECKED = "quran_unchecked"  # a verse no check resolved (blocks a final build)
     MISSING_NOTES = "missing_notes"  # the image shows a foot-note rule but no notes were read
     MARKER_IN_TEXT = "marker_in_text"  # "(١)" left in the text with no note to pair it with
+    LINES_INSERTED = "lines_inserted"  # printed lines the page reading skipped, read on their own and added
+    EXTRA_TEXT = "extra_text"  # text in the reading that no printed line matches
+    WORDS_CORRECTED = "words_corrected"  # doubtful words changed by the language-model rescoring
 
 
 class OcrInfo(_Model):

@@ -140,7 +140,8 @@ def wait_ready(url: str, timeout_s: float = 25 * 60, echo=print) -> float:
     last = ""
     while time.monotonic() - start < timeout_s:
         try:
-            r = httpx.get(url.rstrip("/") + "/models", headers=headers, timeout=120)
+            # Large models take minutes to load; past 150 s Modal answers with a redirect to wait on.
+            r = httpx.get(url.rstrip("/") + "/models", headers=headers, timeout=600, follow_redirects=True)
             if r.status_code == 200:
                 waited = time.monotonic() - start
                 echo(f"Server ready after {waited:.0f} s")

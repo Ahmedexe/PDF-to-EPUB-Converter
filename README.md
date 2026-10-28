@@ -3,7 +3,7 @@
 Convert scanned Arabic PDF books into right-to-left, reflowable EPUB3 for Kindle and Boox.
 
 An open vision-language model reads each page image and returns lightly tagged text. The default
-is `ft2`, Qwen3-VL-8B fine-tuned on Arabic book pages (see "Fine-tuning" below). The model runs
+is `ft4`, Qwen3-VL-8B fine-tuned on Arabic book pages in many typefaces (see "Fine-tuning" below). The model runs
 on a rented cloud GPU or any OpenAI-compatible endpoint. The tool then checks that text and
 rebuilds the book. Along the way it:
 
@@ -47,7 +47,7 @@ the review step at work.
 
 ## Converting a real book
 
-1. **Run the model somewhere.** `pdf2epub bench deploy ft-ft2` serves the default model with
+1. **Run the model somewhere.** `pdf2epub bench deploy ft-ft4` serves the default model with
    vLLM on a scale-to-zero L40S on Modal (no cost while idle) and records its endpoint and API key
    in `~/.config/pdf2epub/`. Any OpenAI-compatible endpoint works too (`--endpoint`, `--model`),
    including a vLLM server on a rented pod; the base model is `Qwen/Qwen3-VL-8B-Instruct`.
@@ -58,15 +58,19 @@ the review step at work.
        --title "..." --author "..."
    ```
 
-   Pages the model ends too early (far fewer words than Tesseract finds) are read again in
-   horizontal bands, and the fuller reading is kept.
+   Conversion is unattended. Pages the model ends too early (far fewer words than Tesseract
+   finds) are read again in horizontal bands. Pages the checks still flag are read once more at
+   higher resolution and then in bands, and a new reading is kept only when the checks find fewer
+   problems in it. The final EPUB is then built, with `out/<book>-quality.md` listing what the
+   checks still flag, page by page, for spot checks. Nothing waits for a person.
 
    Try a few pages first with `--pdf-pages 1-20`. Books with margin or framed notes:
    `--hashiya foot,lemma,margin --regions auto`.
-3. **Review flagged pages:** `pdf2epub review sharh` opens a local page in your browser. It shows
+3. **Review (optional):** `pdf2epub review sharh` opens a local page in your browser. It shows
    the page image beside the text, with flags highlighted and lines from each note to its anchor.
    Edit a page as tags, fix a note link by selecting the right words, then approve. Every fix is
-   saved under `work/<book>/training/` for fine-tuning later.
+   saved under `work/<book>/training/` for fine-tuning later. With `--review required` the EPUB
+   is not built until every flagged page is fixed or approved here.
 4. **Rebuild or re-read:**
 
    ```sh
@@ -77,8 +81,8 @@ the review step at work.
    ```
 
 Every stage caches its output in `work/<book>/`. A crash or a re-run picks up where it stopped,
-and pages whose model call failed are retried. `build` refuses while pages still need review,
-unless you pass `--draft`.
+and pages whose model call failed are retried. With `--review required`, `build` refuses while
+pages still need review, unless you pass `--draft`.
 
 ## Comparing models (phase 1)
 

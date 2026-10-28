@@ -50,9 +50,10 @@ class OcrSettings(_Settings):
     # OpenAI-compatible base URL, e.g. https://<app>.modal.run/v1; when unset, the endpoint
     # `pdf2epub bench deploy` recorded for the model is used.
     endpoint: str | None = None
-    # The fine-tuned Qwen3-VL-8B (train/finetune_modal.py run ft2), served from the Modal volume;
-    # the base model is "Qwen/Qwen3-VL-8B-Instruct".
-    model: str = "/models/ft2/merged"
+    # The fine-tuned Qwen3-VL-8B (train/finetune_modal.py run ft4: ft2 trained further on pages in
+    # many typefaces), served from the Modal volume; "/models/ft2/merged" is the earlier model and
+    # "Qwen/Qwen3-VL-8B-Instruct" the base model.
+    model: str = "/models/ft4/merged"
     api_key_env: str = "PDF2EPUB_API_KEY"
     fixtures: str | None = None  # fixture backend: folder of NNNN.tags files
     concurrency: int = 8
@@ -69,6 +70,7 @@ class OcrSettings(_Settings):
     prompt_preset: Literal["tags", "plain"] = "tags"
     prompt_dir: str | None = None  # folder of prompt template overrides (same file names as ocr/prompts/)
     cache_salt: str = ""  # change to invalidate cached responses (e.g. after redeploying a model)
+    logprobs: int = 5  # ask for each token's top alternatives (used by the language-model rescoring); 0 = off
 
     def api_key(self) -> str | None:
         """From the environment, else the key ``pdf2epub bench deploy`` saved in ~/.config/pdf2epub/api-key."""
@@ -105,6 +107,10 @@ class CheckSettings(_Settings):
     lemma_lookback_pages: int = 1  # glosses may lag a page behind (spec §6.4 step 2)
     poem_half_ratio: float = 2.2  # max length ratio between the two halves of a verse
     tesseract: bool = True  # word-count cross-check (spec §4)
+    # read every printed line on its own and insert lines the page reading skipped (model servers only).
+    # Off by default: ft2 rarely skips text (about 0.5% of words on the test book), and the check
+    # added about as many wrong words as it recovered there, for 15-20% more GPU time.
+    completeness: bool = False
     tesseract_lang: str = "ara"
     tessdata_dir: str | None = None  # defaults to <repo>/vendor/tessdata when present
     wordcount_tolerance: float = 0.40  # flag when |model - tesseract| / max(model, tesseract) exceeds it
@@ -126,7 +132,23 @@ class BuildSettings(_Settings):
     frames: Literal["section", "separate-epub"] = "section"  # independent works printed بهامشه
     cover: Literal["first-page", "none"] = "first-page"
     allow_flagged: bool = False  # build even if some pages still need review (draft)
+    # auto: unattended. Flagged pages are re-read once another way (the better reading is kept)
+    # and the final EPUB is built with a quality report of what is left; nobody has to review.
+    # required: the EPUB waits until every flagged page is fixed or approved in the review screen.
+    review: Literal["auto", "required"] = "auto"
     epubcheck: bool = True
+
+
+class RescoreSettings(_Settings):
+    """Language-model rescoring of doubtful words (pdf2epub/rescore.py). Weights tuned on the test book."""
+
+    enabled: bool = True
+    app: str = "pdf2epub-lm"  # the Modal app with the deployed Scorer (train/lm_modal.py)
+    weight: float = 0.5  # language-model gain against the image score
+    margin: float = 0.3  # a candidate must beat the word read by this much (tuned for ft4)
+    doubt: float = 0.99  # only words with a token below this probability are reconsidered
+    lines: bool = True  # also read every line on its own and offer its words as candidates (about 1.5x GPU time)
+    line_score: float = -2.0  # image score of a word only the line reading saw (tuned for ft4)
 
 
 class BookConfig(_Settings):
@@ -137,6 +159,7 @@ class BookConfig(_Settings):
     ingest: IngestSettings = Field(default_factory=IngestSettings)
     layout: LayoutSettings = Field(default_factory=LayoutSettings)
     ocr: OcrSettings = Field(default_factory=OcrSettings)
+    rescore: RescoreSettings = Field(default_factory=RescoreSettings)
     text: TextSettings = Field(default_factory=TextSettings)
     checks: CheckSettings = Field(default_factory=CheckSettings)
     build: BuildSettings = Field(default_factory=BuildSettings)

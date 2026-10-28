@@ -132,7 +132,29 @@ def test_coverage_problem(tmp_path):
 def test_default_model_endpoint(tmp_path, monkeypatch):
     from pdf2epub.ocr.models import DEFAULT_MODEL, key_for, recorded_endpoint
 
-    assert key_for(DEFAULT_MODEL) == "ft-ft2" and key_for("Qwen/Qwen3-VL-8B-Instruct") == "qwen3-vl-8b"
+    assert key_for(DEFAULT_MODEL) == "ft-ft4" and key_for("Qwen/Qwen3-VL-8B-Instruct") == "qwen3-vl-8b"
     monkeypatch.setenv("PDF2EPUB_CONFIG", str(tmp_path))
-    (tmp_path / "endpoints.json").write_text('{"ft-ft2": "https://x.modal.run/v1"}')
+    (tmp_path / "endpoints.json").write_text('{"ft-ft4": "https://x.modal.run/v1"}')
     assert recorded_endpoint(DEFAULT_MODEL) == "https://x.modal.run/v1"
+
+
+def test_rescore_corrects_only_doubtful_words():
+    from pdf2epub import rescore as rs
+
+    # "فالوا" read with a doubtful first token whose runner-up gives "قالوا"; "نعم" is sure.
+    tokens = [{"t": "<p>", "lp": 0.0, "alt": []},
+              {"t": "ف", "lp": -0.9, "alt": [["ف", -0.9], ["ق", -1.1]]}, {"t": "الوا", "lp": 0.0, "alt": []},
+              {"t": " نعم", "lp": 0.0, "alt": [[" نعم", 0.0], [" بعم", -6.0]]},
+              {"t": "</p>", "lp": 0.0, "alt": []}]
+    words = rs.words_of(tokens)
+    assert [w.norm for w in words] == ["فالوا", "نعم"] and "قالوا" in words[0].cands
+    jobs = rs.windows(words, doubt=0.99)
+    assert {i for i, _c, _w in jobs} == {0}                         # the sure word is not reconsidered
+    lm = {"فالوا نعم": -9.0, "قالوا نعم": -4.0}                      # log10: "قالوا" fits far better
+    scores = {(i, c): lm[w] for i, c, w in jobs}
+    changes = rs.choose(words, scores, weight=0.5, margin=0.5, doubt=0.99)
+    assert [c[1] for c in changes] == ["قالوا"]
+    assert rs.apply("".join(t["t"] for t in tokens), words, changes) == "<p>قالوا نعم</p>"
+    # a candidate that only cuts the word short is never offered
+    trunc = [{"t": "صخ", "lp": -0.5, "alt": [["صخ", -0.5], ["صخر", -0.6]]}, {"t": "ره", "lp": 0.0, "alt": []}]
+    assert all(len(c) >= 4 for c in rs.words_of(trunc)[0].cands)

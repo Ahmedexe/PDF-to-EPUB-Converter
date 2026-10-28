@@ -11,6 +11,7 @@ import asyncio
 import base64
 import logging
 import random
+import re
 import time
 from pathlib import Path
 from typing import Any
@@ -68,6 +69,8 @@ class OpenAIBackend:
             "temperature": temperature,
         }
         payload.update(extra or {})
+        if self.settings.logprobs:
+            payload.update({"logprobs": True, "top_logprobs": self.settings.logprobs})
         attempts = max(1, self.settings.retries + 1)
         last_error = ""
         for attempt in range(attempts):
@@ -96,9 +99,17 @@ class OpenAIBackend:
                 continue
             if isinstance(content, list):
                 content = "".join(part.get("text", "") for part in content if isinstance(part, dict))
+            tokens = None
+            if self.settings.logprobs and isinstance(choice.get("logprobs"), dict):
+                tokens = [{"t": t["token"], "lp": t["logprob"],
+                           "alt": [[a["token"], a["logprob"]] for a in t.get("top_logprobs") or []]}
+                          for t in choice["logprobs"].get("content") or []]
+                while tokens and re.fullmatch(r"<\|[^|]+\|>", tokens[-1]["t"]):  # end-of-answer marker
+                    tokens.pop()
             return Completion(text=content or "", finish_reason=choice.get("finish_reason") or "stop",
                               model=body.get("model", self.settings.model), elapsed_s=time.monotonic() - start,
-                              usage={k: v for k, v in (body.get("usage") or {}).items() if isinstance(v, int)})
+                              usage={k: v for k, v in (body.get("usage") or {}).items() if isinstance(v, int)},
+                              tokens=tokens)
         raise OcrError(f"{request_id}: failed after {attempts} attempts ({last_error})")
 
     async def _backoff(self, attempt: int, retry_after: str | None) -> None:

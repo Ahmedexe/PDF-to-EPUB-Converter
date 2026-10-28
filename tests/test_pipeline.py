@@ -78,8 +78,20 @@ def flawed(sample, tmp_path):
     return bad
 
 
-def test_flagged_page_blocks_build_until_reviewed(sample, tmp_path):
+def test_unattended_build_is_final_with_quality_report(sample, tmp_path):
     report = pipeline.convert(sample.pdf, tmp_path / "work", overrides(sample, **{"ocr.fixtures": str(flawed(sample, tmp_path))}),
+                              modified=STAMP)
+    wd, _cfg = pipeline.open_book(tmp_path / "work", "sample")
+    assert report.blocked == [2]                                  # the re-reads could not fix it
+    assert report.epubs and report.epubs[0].name == "sample.epub"  # final, not a draft
+    text = report.quality.read_text(encoding="utf-8")
+    assert "| 2 |" in text and "quran" in text.lower()
+    assert wd.page_tags(2).exists() and "quran" in wd.page_tags(2).read_text(encoding="utf-8")  # first reading kept
+
+
+def test_flagged_page_blocks_build_until_reviewed(sample, tmp_path):
+    report = pipeline.convert(sample.pdf, tmp_path / "work",
+                              overrides(sample, **{"ocr.fixtures": str(flawed(sample, tmp_path)), "build.review": "required"}),
                               modified=STAMP)
     assert report.blocked == [2] and not report.epubs
     wd, cfg = pipeline.open_book(tmp_path / "work", "sample")
